@@ -1,0 +1,98 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout
+from PyQt5.QtCore import Qt
+import sympy as sp
+import matplotlib.pyplot as plt
+import numpy as np
+
+class Calculator:
+    def __init__(self):
+        pass
+
+    def calculate_integral(self, function_text):
+        x = sp.symbols('x')
+        function = sp.sympify(function_text)
+        integral = sp.integrate(function, x)
+        return str(integral)
+
+    def calculate_derivative(self, function_text):
+        x = sp.symbols('x')
+        function = sp.sympify(function_text)
+        derivative = sp.diff(function, x)
+        return str(derivative)
+
+    def plot_function(self, function_text):
+        x = sp.symbols('x')
+        function = sp.sympify(function_text)
+        f = sp.lambdify(x, function, 'numpy')
+
+        x_vals = np.linspace(-10, 10, 400)
+        y_vals = f(x_vals)
+
+        plt.figure()
+        plt.plot(x_vals, y_vals, label=function_text)
+        plt.xlabel('x')
+        plt.ylabel('f(x)')
+        plt.legend()
+        plt.show()
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Scientific Calculator')
+
+        self.calculator = Calculator()
+
+        self.initUI()
+
+    def initUI(self):
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        layout = QVBoxLayout()
+
+        self.functionInput = QLineEdit()
+        self.functionInput.setPlaceholderText('Enter function of x')
+        layout.addWidget(self.functionInput)
+
+        button_layout = QHBoxLayout()
+
+        self.integralButton = QPushButton('Calculate Integral')
+        self.integralButton.clicked.connect(self.calculate_integral)
+        button_layout.addWidget(self.integralButton)
+
+        self.derivativeButton = QPushButton('Calculate Derivative')
+        self.derivativeButton.clicked.connect(self.calculate_derivative)
+        button_layout.addWidget(self.derivativeButton)
+
+        self.plotButton = QPushButton('Plot Function')
+        self.plotButton.clicked.connect(self.plot_function)
+        button_layout.addWidget(self.plotButton)
+
+        layout.addLayout(button_layout)
+
+        self.resultOutput = QLabel('')
+        self.resultOutput.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.resultOutput)
+
+        central_widget.setLayout(layout)
+
+    def calculate_integral(self):
+        function_text = self.functionInput.text()
+        result = self.calculator.calculate_integral(function_text)
+        self.resultOutput.setText(f'Integral: {result}')
+
+    def calculate_derivative(self):
+        function_text = self.functionInput.text()
+        result = self.calculator.calculate_derivative(function_text)
+        self.resultOutput.setText(f'Derivative: {result}')
+
+    def plot_function(self):
+        function_text = self.functionInput.text()
+        self.calculator.plot_function(function_text)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
